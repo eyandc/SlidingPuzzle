@@ -1,28 +1,13 @@
-// Firebase imports
-import { initializeApp } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-app.js";
+import { db } from "./firebase-config.js";
+
 import {
-    getFirestore,
-    collection,
-    addDoc,
-    getDocs,
-    query,
-    orderBy,
-    limit
+collection,
+addDoc,
+getDocs,
+query,
+orderBy,
+limit
 } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-firestore.js";
-
-// Firebase configuration
-const firebaseConfig = {
-    apiKey: "AIzaSyCXIUk_1l3eY0eOqDKjUx8xqNh6zRlEl-4",
-    authDomain: "sliding-puzzle-game-31d9e.firebaseapp.com",
-    projectId: "sliding-puzzle-game-31d9e",
-    storageBucket: "sliding-puzzle-game-31d9e.firebasestorage.app",
-    messagingSenderId: "73657506884",
-    appId: "1:73657506884:web:f904ca746cf1e1f8297011"
-};
-
-// Initialize Firebase
-const app = initializeApp(firebaseConfig);
-const db = getFirestore(app);
 
 // Existing elements
 const board = document.getElementById("board");
