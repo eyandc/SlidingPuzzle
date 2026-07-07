@@ -1,20 +1,45 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <title>Sliding Puzzle</title>
-  <link rel="stylesheet" href="style.css" />
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Sliding Puzzle Game</title>
+  <link rel="stylesheet" href="style.css">
 </head>
 <body>
+<h1>🧩 Sliding Puzzle Game</h1>
+<div class="game-layout">
+  <div class="puzzle-container">
+    <div class="controls">
+      <input type="text" id="playerName" placeholder="Enter your name">
+      <select id="difficulty">
+        <option value="3">Easy (3x3)</option>
+        <option value="4">Medium (4x4)</option>
+        <option value="5">Hard (5x5)</option>
+      </select>
+      <button id="startBtn">Shuffle</button>
+    </div>
 
-<h1>Sliding Puzzle</h1>
+    <div class="info">
+      Moves: <span id="moves">0</span>
+    </div>
 
-<div class="controls">
-  <button id="shuffleBtn">Shuffle</button>
-  <span id="moves">Moves: 0</span>
+    <div id="board"></div>
+  </div>
+
+  <div class="score-container">
+    <h2>🏆 <span id="scoreTitle">Easy (3x3)</span></h2>
+    <table>
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Moves</th>
+        </tr>
+      </thead>
+      <tbody id="scoreTable"></tbody>
+    </table>
+  </div>
 </div>
-
-<div id="board"></div>
 
 <script src="script.js"></script>
 </body>
