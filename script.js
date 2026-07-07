@@ -1,14 +1,48 @@
 const board = document.getElementById("board");
-const shuffleBtn = document.getElementById("shuffleBtn");
-const movesText = document.getElementById("moves");
+const movesDisplay = document.getElementById("moves");
+const difficulty = document.getElementById("difficulty");
+const startBtn = document.getElementById("startBtn");
+const playerName = document.getElementById("playerName");
+const scoreTable = document.getElementById("scoreTable");
+const scoreTitle = document.getElementById("scoreTitle");
 
-const size = 3;
-
+let size = 3;
 let tiles = [];
 let moves = 0;
+let currentLevel = "3x3";
 
-// start game
-function init() {
+// Load saved scores
+let scores = JSON.parse(localStorage.getItem("puzzleScores")) || {
+  "3x3": [],
+  "4x4": [],
+  "5x5": []
+};
+
+// Start game button
+startBtn.addEventListener("click", () => {
+  size = Number(difficulty.value);
+  currentLevel = `${size}x${size}`;
+  showScores(currentLevel);
+  startGame();
+});
+
+// Update leaderboard when difficulty changes
+difficulty.addEventListener("change", () => {
+  currentLevel = `${difficulty.value}x${difficulty.value}`;
+  showScores(currentLevel);
+});
+
+// Create new game
+function startGame() {
+  moves = 0;
+  movesDisplay.textContent = moves;
+  createTiles();
+  shuffle();
+  render();
+}
+
+// Create tiles
+function createTiles() {
   tiles = [];
 
   for (let i = 1; i < size * size; i++) {
@@ -16,90 +50,135 @@ function init() {
   }
 
   tiles.push(null);
-
-  moves = 0;
-  render();
 }
 
-// render board
+// Shuffle board
+function shuffle() {
+  for (let i = 0; i < 300; i++) {
+    const empty = tiles.indexOf(null);
+    const possibleMoves = getNeighbours(empty);
+
+    const randomMove =
+      possibleMoves[Math.floor(Math.random() * possibleMoves.length)];
+
+    [tiles[empty], tiles[randomMove]] =
+      [tiles[randomMove], tiles[empty]];
+  }
+}
+
+// Display board
 function render() {
   board.innerHTML = "";
+  board.style.gridTemplateColumns = `repeat(${size}, 1fr)`;
 
-  tiles.forEach((value, index) => {
-    const tile = document.createElement("div");
-    tile.className = "tile";
+  tiles.forEach((tile, index) => {
+    const box = document.createElement("div");
+    box.className = "tile";
 
-    if (value === null) {
-      tile.classList.add("empty");
+    if (tile === null) {
+      box.classList.add("empty");
     } else {
-      tile.textContent = value;
-      tile.onclick = () => moveTile(index);
+      box.textContent = tile;
+      box.addEventListener("click", () => moveTile(index));
     }
 
-    board.appendChild(tile);
+    board.appendChild(box);
   });
-
-  movesText.textContent = "Moves: " + moves;
 }
 
-// find empty tile
-function emptyIndex() {
-  return tiles.indexOf(null);
-}
-
-// check adjacency
-function isAdjacent(a, b) {
-  const ax = a % size;
-  const ay = Math.floor(a / size);
-  const bx = b % size;
-  const by = Math.floor(b / size);
-
-  return Math.abs(ax - bx) + Math.abs(ay - by) === 1;
-}
-
-// move tile
+// Move tile
 function moveTile(index) {
-  const empty = emptyIndex();
+  const empty = tiles.indexOf(null);
 
-  if (isAdjacent(index, empty)) {
-    [tiles[index], tiles[empty]] = [tiles[empty], tiles[index]];
+  if (getNeighbours(empty).includes(index)) {
+    [tiles[index], tiles[empty]] =
+      [tiles[empty], tiles[index]];
+
     moves++;
+    movesDisplay.textContent = moves;
+
     render();
     checkWin();
   }
 }
 
-// shuffle (safe solvable shuffle)
-function shuffle() {
-  for (let i = 0; i < 200; i++) {
-    const empty = emptyIndex();
+// Get valid moves
+function getNeighbours(index) {
+  const result = [];
+  const row = Math.floor(index / size);
+  const col = index % size;
 
-    const neighbors = tiles
-      .map((_, i) => i)
-      .filter(i => isAdjacent(i, empty));
+  if (row > 0) result.push(index - size);
+  if (row < size - 1) result.push(index + size);
+  if (col > 0) result.push(index - 1);
+  if (col < size - 1) result.push(index + 1);
 
-    const random = neighbors[Math.floor(Math.random() * neighbors.length)];
+  return result;
+}
 
-    if (random !== undefined) {
-      moveTile(random);
+// Check completed puzzle
+function checkWin() {
+  for (let i = 0; i < tiles.length - 1; i++) {
+    if (tiles[i] !== i + 1) {
+      return;
     }
   }
 
-  moves = 0;
-  render();
+  saveScore();
+
+  alert(`🎉 Puzzle Completed!\nMoves: ${moves}`);
 }
 
-// win check
-function checkWin() {
-  for (let i = 0; i < tiles.length - 1; i++) {
-    if (tiles[i] !== i + 1) return;
+// Save score
+function saveScore() {
+  let name = playerName.value.trim();
+
+  if (name === "") {
+    name = "Anonymous";
   }
 
-  setTimeout(() => alert("You solved it! 🎉"), 100);
+  scores[currentLevel].push({
+    name,
+    moves
+  });
+
+  // Lowest moves first
+  scores[currentLevel].sort((a, b) => a.moves - b.moves);
+
+  // Keep top 10
+  scores[currentLevel] = scores[currentLevel].slice(0, 10);
+
+  localStorage.setItem(
+    "puzzleScores",
+    JSON.stringify(scores)
+  );
+
+  showScores(currentLevel);
 }
 
-// events
-shuffleBtn.addEventListener("click", shuffle);
+// Display leaderboard
+function showScores(level) {
+  scoreTable.innerHTML = "";
+  scoreTitle.textContent = `${level} Leaderboard`;
 
-// start
-init();
+  if (scores[level].length === 0) {
+    scoreTable.innerHTML =
+      '<tr><td colspan="2">No records yet</td></tr>';
+    return;
+  }
+
+  scores[level].forEach(player => {
+    const row = document.createElement("tr");
+
+    row.innerHTML = `
+      <td>${player.name}</td>
+      <td>${player.moves}</td>
+    `;
+
+    scoreTable.appendChild(row);
+  });
+}
+
+// Initial load
+showScores("3x3");
+startGame();
