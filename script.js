@@ -1,12 +1,13 @@
 import { db } from "./firebase-config.js";
 
 import {
-collection,
-addDoc,
-getDocs,
-query,
-orderBy,
-limit
+  collection,
+  addDoc,
+  getDocs,
+  query,
+  orderBy,
+  limit,
+  serverTimestamp
 } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-firestore.js";
 
 // Existing elements
@@ -156,7 +157,7 @@ async function saveScore() {
         name: name,
         moves: moves,
         level: currentLevel,
-        createdAt: new Date()
+        createdAt: serverTimestamp()
     });
 
     showScores(currentLevel);
